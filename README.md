@@ -3,7 +3,7 @@ Short Description: An interactive, gamified simulation of Thomas Hobbes' Social 
 
 Leviathan: An Interactive Exploration
 A Pedagogical Tool for Teaching Social Contract Theory
-[Link to Live Demo] (Put your GitHub Pages link here)
+https://amall098.github.io/leviathan-interactive-simulation/
 Overview
 This project is an interactive, browser-based simulation of Thomas Hobbes' Leviathan. It was designed to bridge the gap between Political Philosophy and Computer Science students. It models the "State of Nature" as a system of variables, allowing students to experiment with parameters like "Mistrust," "Resource Distribution," and "Sovereign Power" to observe the algorithmic emergence of social stability or violence.
 Pedagogical Goals
