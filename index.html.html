@@ -1,0 +1,770 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leviathan: An Interactive Exploration of Social Contract Theory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            min-height: 250px;
+            max-height: 400px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .slider-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .parameter-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .contract-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .contract-active {
+            background-color: rgb(34, 197, 94);
+            color: white;
+        }
+        
+        .contract-inactive {
+            background-color: rgb(239, 68, 68);
+            color: white;
+        }
+        
+        .philosophy-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .hobbes-badge {
+            background-color: rgb(254, 240, 138);
+            color: rgb(146, 64, 14);
+        }
+        
+        .locke-badge {
+            background-color: rgb(186, 230, 253);
+            color: rgb(30, 58, 138);
+        }
+        
+        .rousseau-badge {
+            background-color: rgb(196, 181, 253);
+            color: rgb(91, 33, 182);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Leviathan: An Interactive Exploration</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                Explore Thomas Hobbes' political philosophy through interactive modeling. 
+                What would you sacrifice for security? Freedom? Privacy? Autonomy?
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel: Controls -->
+            <div class="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">Simulation Controls</h2>
+                
+                <!-- Scenario Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Historical Scenario</label>
+                    <select id="historicalScenario" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="civilWar">Civil War</option>
+                        <option value="revolution">Revolution</option>
+                        <option value="modern" selected>Modern Society</option>
+                    </select>
+                </div>
+                
+                <!-- Philosophical Role -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Philosophical Perspective</label>
+                    <select id="philosophicalRole" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="hobbes" selected>Hobbes (Authoritarian)</option>
+                        <option value="locke">Locke (Liberal)</option>
+                        <option value="rousseau">Rousseau (Democratic)</option>
+                    </select>
+                </div>
+                
+                <!-- Social Contract Toggle -->
+                <div class="mb-6">
+                    <button id="socialContractToggle" class="contract-toggle contract-inactive w-full py-3 px-4 rounded-md font-semibold text-center">
+                        Social Contract: INACTIVE
+                    </button>
+                    <p class="text-sm text-gray-600 mt-2">
+                        {socialContract ? 
+                            "A sovereign power maintains order through the social contract" : 
+                            "Society exists in a state of nature without governance"}
+                    </p>
+                </div>
+                
+                <!-- Parameter Sliders -->
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Mistrust Level</span>
+                        <span id="mistrustValue">80</span>
+                    </div>
+                    <input type="range" id="mistrustLevel" min="0" max="100" value="80" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Resource Distribution</span>
+                        <span id="resourceValue">30</span>
+                    </div>
+                    <input type="range" id="resourceDistribution" min="0" max="100" value="30" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Desire for Peace</span>
+                        <span id="peaceValue">40</span>
+                    </div>
+                    <input type="range" id="desireForPeace" min="0" max="100" value="40" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Sovereign Power</span>
+                        <span id="sovereignValue">0</span>
+                    </div>
+                    <input type="range" id="sovereignPower" min="0" max="100" value="0" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Individual Freedom</span>
+                        <span id="freedomValue">50</span>
+                    </div>
+                    <input type="range" id="individualFreedom" min="0" max="100" value="50" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Power Legitimacy</span>
+                        <span id="legitimacyValue">50</span>
+                    </div>
+                    <input type="range" id="powerLegitimacy" min="0" max="100" value="50" class="w-full">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="parameter-label">
+                        <span>Interpersonal Trust</span>
+                        <span id="trustValue">50</span>
+                    </div>
+                    <input type="range" id="interpersonalTrust" min="0" max="100" value="50" class="w-full">
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="mt-8 space-y-3">
+                    <button id="presentDilemma" class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">
+                        Face Moral Dilemma
+                    </button>
+                    <button id="resetSimulation" class="w-full py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition">
+                        Reset Simulation
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Results -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Metrics Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="metric-card bg-white rounded-lg shadow p-4">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Social Stability</h3>
+                        <div class="flex items-center">
+                            <div class="text-2xl font-bold text-green-600" id="socialStability">20</div>
+                            <div class="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="stabilityBar" class="h-full bg-green-500" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-lg shadow p-4">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Violence Level</h3>
+                        <div class="flex items-center">
+                            <div class="text-2xl font-bold text-red-600" id="violenceLevel">90</div>
+                            <div class="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="violenceBar" class="h-full bg-red-500" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-lg shadow p-4">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Contract Compliance</h3>
+                        <div class="flex items-center">
+                            <div class="text-2xl font-bold text-blue-600" id="contractCompliance">10</div>
+                            <div class="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="complianceBar" class="h-full bg-blue-500" style="width: 10%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-lg shadow p-4">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Survival Probability</h3>
+                        <div class="flex items-center">
+                            <div class="text-2xl font-bold text-purple-600" id="survivalProbability">30</div>
+                            <div class="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="survivalBar" class="h-full bg-purple-500" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Society Evolution Over Time</h2>
+                    <div class="chart-container">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Explanation Panel -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Current State Analysis</h2>
+                    <div id="analysisContent" class="text-gray-700">
+                        <p class="mb-3">Society currently exists in a <span class="font-semibold text-red-600">state of nature</span> without a social contract. According to Hobbes, this leads to a "war of all against all" where life is "solitary, poor, nasty, brutish, and short."</p>
+                        <p>With high mistrust (80) and low resource distribution (30), individuals compete fiercely for survival. The absence of sovereign power results in minimal social stability (20) and high violence (90).</p>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <h3 class="font-medium text-gray-800 mb-2">Philosophical Context</h3>
+                        <div id="philosophyContext" class="flex items-center">
+                            <span class="philosophy-badge hobbes-badge mr-3">Hobbes</span>
+                            <span class="text-sm text-gray-600">Hobbes argued that only an absolute sovereign could prevent societal collapse. Individual freedom must be sacrificed for security.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize state variables
+        let state = {
+            mistrustLevel: 80,
+            resourceDistribution: 30,
+            desireForPeace: 40,
+            sovereignPower: 0,
+            socialContract: false,
+            individualFreedom: 50,
+            powerLegitimacy: 50,
+            interpersonalTrust: 50,
+            philosophicalRole: "hobbes",
+            historicalScenario: "modern",
+            socialStability: 20,
+            violenceLevel: 90,
+            contractCompliance: 10,
+            survivalProbability: 30
+        };
+
+        // Role modifiers
+        const roleModifiers = {
+            hobbes: { sovereignPower: 1.2 },
+            locke: { individualFreedom: 1.3, powerLegitimacy: 1.2 },
+            rousseau: { interpersonalTrust: 1.4, desireForPeace: 1.2 },
+        };
+
+        // Scenario presets
+        const scenarioPresets = {
+            civilWar: { mistrustLevel: 90, resourceDistribution: 20, sovereignPower: 10 },
+            revolution: { mistrustLevel: 70, desireForPeace: 80, individualFreedom: 90 },
+            modern: { mistrustLevel: 40, sovereignPower: 60, powerLegitimacy: 70 },
+        };
+
+        // Chart setup
+        const chartCtx = document.getElementById('evolutionChart').getContext('2d');
+        const chartData = {
+            labels: Array.from({ length: 20 }, (_, i) => `Turn ${i + 1}`),
+            datasets: [
+                { 
+                    label: "Social Stability", 
+                    data: Array(20).fill(20), 
+                    borderColor: "rgb(75,192,192)", 
+                    backgroundColor: "rgba(75,192,192,0.5)" 
+                },
+                { 
+                    label: "Violence Level", 
+                    data: Array(20).fill(90), 
+                    borderColor: "rgb(255,99,132)", 
+                    backgroundColor: "rgba(255,99,132,0.5)" 
+                },
+                { 
+                    label: "Contract Compliance", 
+                    data: Array(20).fill(10), 
+                    borderColor: "rgb(54,162,235)", 
+                    backgroundColor: "rgba(54,162,235,0.5)" 
+                },
+            ],
+        };
+
+        const evolutionChart = new Chart(chartCtx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Simulation interval
+        let simulationInterval = null;
+
+        // Initialize simulation
+        function initSimulation() {
+            // Set up event listeners
+            document.getElementById('mistrustLevel').addEventListener('input', updateParameter);
+            document.getElementById('resourceDistribution').addEventListener('input', updateParameter);
+            document.getElementById('desireForPeace').addEventListener('input', updateParameter);
+            document.getElementById('sovereignPower').addEventListener('input', updateParameter);
+            document.getElementById('individualFreedom').addEventListener('input', updateParameter);
+            document.getElementById('powerLegitimacy').addEventListener('input', updateParameter);
+            document.getElementById('interpersonalTrust').addEventListener('input', updateParameter);
+            
+            document.getElementById('socialContractToggle').addEventListener('click', toggleSocialContract);
+            document.getElementById('philosophicalRole').addEventListener('change', updatePhilosophicalRole);
+            document.getElementById('historicalScenario').addEventListener('change', updateHistoricalScenario);
+            document.getElementById('presentDilemma').addEventListener('click', presentDilemma);
+            document.getElementById('resetSimulation').addEventListener('click', resetSimulation);
+            
+            // Start simulation interval
+            simulationInterval = setInterval(runSimulationStep, 2000);
+            
+            // Initial update
+            updateSimulation();
+            updateUI();
+        }
+
+        // Update parameter from slider
+        function updateParameter(event) {
+            const param = event.target.id;
+            const value = parseInt(event.target.value);
+            
+            // Type checking
+            if (typeof value !== 'number' || isNaN(value)) {
+                console.error(`Invalid value for ${param}:`, event.target.value);
+                return;
+            }
+            
+            state[param] = value;
+            document.getElementById(param.replace(/([A-Z])/g, '$1').toLowerCase() + 'Value').textContent = value;
+            updateSimulation();
+            updateUI();
+        }
+
+        // Toggle social contract
+        function toggleSocialContract() {
+            try {
+                state.socialContract = !state.socialContract;
+                state.sovereignPower = state.socialContract ? 70 : 0;
+                
+                // Update UI
+                const toggle = document.getElementById('socialContractToggle');
+                if (state.socialContract) {
+                    toggle.textContent = 'Social Contract: ACTIVE';
+                    toggle.classList.remove('contract-inactive');
+                    toggle.classList.add('contract-active');
+                } else {
+                    toggle.textContent = 'Social Contract: INACTIVE';
+                    toggle.classList.remove('contract-active');
+                    toggle.classList.add('contract-inactive');
+                }
+                
+                document.getElementById('sovereignPower').value = state.sovereignPower;
+                document.getElementById('sovereignValue').textContent = state.sovereignPower;
+                
+                updateSimulation();
+                updateUI();
+            } catch (error) {
+                console.error('Error toggling social contract:', error);
+            }
+        }
+
+        // Update philosophical role
+        function updatePhilosophicalRole(event) {
+            try {
+                state.philosophicalRole = event.target.value;
+                updateSimulation();
+                updateUI();
+            } catch (error) {
+                console.error('Error updating philosophical role:', error);
+            }
+        }
+
+        // Update historical scenario
+        function updateHistoricalScenario(event) {
+            try {
+                state.historicalScenario = event.target.value;
+                const preset = scenarioPresets[state.historicalScenario];
+                
+                if (preset) {
+                    if (typeof preset.mistrustLevel === 'number') {
+                        state.mistrustLevel = preset.mistrustLevel;
+                        document.getElementById('mistrustLevel').value = preset.mistrustLevel;
+                        document.getElementById('mistrustValue').textContent = preset.mistrustLevel;
+                    }
+                    
+                    if (typeof preset.resourceDistribution === 'number') {
+                        state.resourceDistribution = preset.resourceDistribution;
+                        document.getElementById('resourceDistribution').value = preset.resourceDistribution;
+                        document.getElementById('resourceValue').textContent = preset.resourceDistribution;
+                    }
+                    
+                    if (typeof preset.sovereignPower === 'number') {
+                        state.sovereignPower = preset.sovereignPower;
+                        document.getElementById('sovereignPower').value = preset.sovereignPower;
+                        document.getElementById('sovereignValue').textContent = preset.sovereignPower;
+                    }
+                    
+                    if (typeof preset.individualFreedom === 'number') {
+                        state.individualFreedom = preset.individualFreedom;
+                        document.getElementById('individualFreedom').value = preset.individualFreedom;
+                        document.getElementById('freedomValue').textContent = preset.individualFreedom;
+                    }
+                    
+                    if (typeof preset.powerLegitimacy === 'number') {
+                        state.powerLegitimacy = preset.powerLegitimacy;
+                        document.getElementById('powerLegitimacy').value = preset.powerLegitimacy;
+                        document.getElementById('legitimacyValue').textContent = preset.powerLegitimacy;
+                    }
+                    
+                    updateSimulation();
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error updating historical scenario:', error);
+            }
+        }
+
+        // Present moral dilemma
+        function presentDilemma() {
+            try {
+                const accept = window.confirm("The Leviathan proposes total surveillance to guarantee peace. Do you accept this trade-off between freedom and security?");
+                
+                if (accept) {
+                    state.individualFreedom = Math.max(0, state.individualFreedom - 30);
+                    document.getElementById('individualFreedom').value = state.individualFreedom;
+                    document.getElementById('freedomValue').textContent = state.individualFreedom;
+                } else {
+                    state.sovereignPower = Math.max(0, state.sovereignPower - 20);
+                    document.getElementById('sovereignPower').value = state.sovereignPower;
+                    document.getElementById('sovereignValue').textContent = state.sovereignPower;
+                }
+                
+                updateSimulation();
+                updateUI();
+            } catch (error) {
+                console.error('Error presenting dilemma:', error);
+            }
+        }
+
+        // Reset simulation
+        function resetSimulation() {
+            try {
+                state = {
+                    mistrustLevel: 80,
+                    resourceDistribution: 30,
+                    desireForPeace: 40,
+                    sovereignPower: 0,
+                    socialContract: false,
+                    individualFreedom: 50,
+                    powerLegitimacy: 50,
+                    interpersonalTrust: 50,
+                    philosophicalRole: "hobbes",
+                    historicalScenario: "modern",
+                    socialStability: 20,
+                    violenceLevel: 90,
+                    contractCompliance: 10,
+                    survivalProbability: 30
+                };
+                
+                // Reset all UI elements
+                document.getElementById('mistrustLevel').value = state.mistrustLevel;
+                document.getElementById('mistrustValue').textContent = state.mistrustLevel;
+                document.getElementById('resourceDistribution').value = state.resourceDistribution;
+                document.getElementById('resourceValue').textContent = state.resourceDistribution;
+                document.getElementById('desireForPeace').value = state.desireForPeace;
+                document.getElementById('peaceValue').textContent = state.desireForPeace;
+                document.getElementById('sovereignPower').value = state.sovereignPower;
+                document.getElementById('sovereignValue').textContent = state.sovereignPower;
+                document.getElementById('individualFreedom').value = state.individualFreedom;
+                document.getElementById('freedomValue').textContent = state.individualFreedom;
+                document.getElementById('powerLegitimacy').value = state.powerLegitimacy;
+                document.getElementById('legitimacyValue').textContent = state.powerLegitimacy;
+                document.getElementById('interpersonalTrust').value = state.interpersonalTrust;
+                document.getElementById('trustValue').textContent = state.interpersonalTrust;
+                document.getElementById('philosophicalRole').value = state.philosophicalRole;
+                document.getElementById('historicalScenario').value = state.historicalScenario;
+                
+                const toggle = document.getElementById('socialContractToggle');
+                toggle.textContent = 'Social Contract: INACTIVE';
+                toggle.classList.remove('contract-active');
+                toggle.classList.add('contract-inactive');
+                
+                // Reset chart data
+                evolutionChart.data.datasets.forEach(dataset => {
+                    if (dataset.label === "Social Stability") {
+                        dataset.data = Array(20).fill(20);
+                    } else if (dataset.label === "Violence Level") {
+                        dataset.data = Array(20).fill(90);
+                    } else if (dataset.label === "Contract Compliance") {
+                        dataset.data = Array(20).fill(10);
+                    }
+                });
+                evolutionChart.update();
+                
+                updateSimulation();
+                updateUI();
+            } catch (error) {
+                console.error('Error resetting simulation:', error);
+            }
+        }
+
+        // Run simulation step
+        function runSimulationStep() {
+            try {
+                evolutionChart.data.labels = [...evolutionChart.data.labels.slice(1), `Turn ${evolutionChart.data.labels.length + 1}`];
+                
+                evolutionChart.data.datasets.forEach(dataset => {
+                    const newData = [...dataset.data.slice(1)];
+                    
+                    if (dataset.label === "Social Stability") {
+                        newData.push(state.socialStability);
+                    } else if (dataset.label === "Violence Level") {
+                        newData.push(state.violenceLevel);
+                    } else if (dataset.label === "Contract Compliance") {
+                        newData.push(state.contractCompliance);
+                    }
+                    
+                    dataset.data = newData;
+                });
+                
+                evolutionChart.update();
+            } catch (error) {
+                console.error('Error running simulation step:', error);
+            }
+        }
+
+        // Update simulation calculations
+        function updateSimulation() {
+            try {
+                const modifiers = roleModifiers[state.philosophicalRole] || {};
+                
+                // Apply role modifiers with type checking
+                const adjustedDesire = state.desireForPeace * (modifiers.desireForPeace || 1);
+                const adjustedSovereign = state.sovereignPower * (modifiers.sovereignPower || 1);
+                const adjustedTrust = state.interpersonalTrust * (modifiers.interpersonalTrust || 1);
+                const adjustedFreedom = state.individualFreedom * (modifiers.individualFreedom || 1);
+                const adjustedLegitimacy = state.powerLegitimacy * (modifiers.powerLegitimacy || 1);
+                
+                // Calculate stability
+                let stability;
+                if (state.socialContract) {
+                    stability = adjustedDesire * 0.4 + adjustedSovereign * 0.3 + state.resourceDistribution * 0.1 + adjustedTrust * 0.2 + adjustedLegitimacy * 0.2 - state.mistrustLevel * 0.2;
+                } else {
+                    stability = adjustedDesire * 0.3 + state.resourceDistribution * 0.1 + adjustedTrust * 0.2 - state.mistrustLevel * 0.6;
+                }
+                
+                // Calculate violence
+                let violence;
+                if (state.socialContract) {
+                    violence = state.mistrustLevel * 0.4 + (100 - adjustedSovereign * 0.6) - adjustedDesire * 0.2 - state.resourceDistribution * 0.1 - adjustedTrust * 0.2;
+                } else {
+                    violence = state.mistrustLevel * 0.7 + (100 - state.resourceDistribution * 0.2) - adjustedDesire * 0.1;
+                }
+                
+                // Calculate compliance
+                let compliance;
+                if (state.socialContract) {
+                    compliance = adjustedSovereign * 0.6 + adjustedDesire * 0.3 - state.mistrustLevel * 0.2 + state.resourceDistribution * 0.1 + adjustedLegitimacy * 0.2;
+                } else {
+                    compliance = adjustedDesire * 0.4 - state.mistrustLevel * 0.6 + state.resourceDistribution * 0.2;
+                }
+                
+                // Calculate survival
+                let survival;
+                if (state.socialContract) {
+                    survival = stability * 0.5 + (100 - violence * 0.3) + compliance * 0.2 + adjustedFreedom * 0.1;
+                } else {
+                    survival = (100 - violence * 0.6) + state.resourceDistribution * 0.3 + adjustedDesire * 0.1;
+                }
+                
+                // Update state with rounded values
+                state.socialStability = Math.round(Math.max(0, Math.min(100, stability)));
+                state.violenceLevel = Math.round(Math.max(0, Math.min(100, violence)));
+                state.contractCompliance = Math.round(Math.max(0, Math.min(100, compliance)));
+                state.survivalProbability = Math.round(Math.max(0, Math.min(100, survival)));
+            } catch (error) {
+                console.error('Error updating simulation:', error);
+            }
+        }
+
+        // Update UI elements
+        function updateUI() {
+            try {
+                // Update metric displays
+                document.getElementById('socialStability').textContent = state.socialStability;
+                document.getElementById('violenceLevel').textContent = state.violenceLevel;
+                document.getElementById('contractCompliance').textContent = state.contractCompliance;
+                document.getElementById('survivalProbability').textContent = state.survivalProbability;
+                
+                // Update progress bars
+                document.getElementById('stabilityBar').style.width = `${state.socialStability}%`;
+                document.getElementById('violenceBar').style.width = `${state.violenceLevel}%`;
+                document.getElementById('complianceBar').style.width = `${state.contractCompliance}%`;
+                document.getElementById('survivalBar').style.width = `${state.survivalProbability}%`;
+                
+                // Update analysis content
+                updateAnalysisContent();
+                
+                // Update philosophy context
+                updatePhilosophyContext();
+            } catch (error) {
+                console.error('Error updating UI:', error);
+            }
+        }
+
+        // Update analysis content based on current state
+        function updateAnalysisContent() {
+            try {
+                const analysisContent = document.getElementById('analysisContent');
+                let content = '';
+                
+                if (state.socialContract) {
+                    content += `<p class="mb-3">Society operates under a <span class="font-semibold text-green-600">social contract</span> with a sovereign power of ${state.sovereignPower}. `;
+                    
+                    if (state.socialStability > 70) {
+                        content += "The social contract has successfully established order and stability.</p>";
+                    } else if (state.socialStability > 40) {
+                        content += "The social contract provides moderate stability, but challenges remain.</p>";
+                    } else {
+                        content += "Despite the social contract, society remains unstable due to conflicting factors.</p>";
+                    }
+                    
+                    if (state.violenceLevel > 60) {
+                        content += `<p class="mb-3">Violence remains high (${state.violenceLevel}), suggesting the sovereign power may be insufficient or illegitimate.</p>`;
+                    } else {
+                        content += `<p class="mb-3">Violence has been reduced to ${state.violenceLevel}, demonstrating the effectiveness of the social contract.</p>`;
+                    }
+                    
+                    if (state.individualFreedom < 30) {
+                        content += `<p>Individual freedom has been significantly restricted (${state.individualFreedom}) in exchange for security.</p>`;
+                    }
+                } else {
+                    content += `<p class="mb-3">Society currently exists in a <span class="font-semibold text-red-600">state of nature</span> without a social contract. According to Hobbes, this leads to a "war of all against all" where life is "solitary, poor, nasty, brutish, and short."</p>`;
+                    
+                    if (state.mistrustLevel > 70) {
+                        content += `<p class="mb-3">With high mistrust (${state.mistrustLevel}) and low resource distribution (${state.resourceDistribution}), individuals compete fiercely for survival.</p>`;
+                    } else {
+                        content += `<p class="mb-3">Mistrust levels (${state.mistrustLevel}) and resource distribution (${state.resourceDistribution}) create a challenging environment for cooperation.</p>`;
+                    }
+                    
+                    content += `<p>The absence of sovereign power results in minimal social stability (${state.socialStability}) and high violence (${state.violenceLevel}).</p>`;
+                }
+                
+                analysisContent.innerHTML = content;
+            } catch (error) {
+                console.error('Error updating analysis content:', error);
+            }
+        }
+
+        // Update philosophy context based on current role
+        function updatePhilosophyContext() {
+            try {
+                const philosophyContext = document.getElementById('philosophyContext');
+                let content = '';
+                
+                switch(state.philosophicalRole) {
+                    case 'hobbes':
+                        content = `
+                            <span class="philosophy-badge hobbes-badge mr-3">Hobbes</span>
+                            <span class="text-sm text-gray-600">Hobbes argued that only an absolute sovereign could prevent societal collapse. Individual freedom must be sacrificed for security.</span>
+                        `;
+                        break;
+                    case 'locke':
+                        content = `
+                            <span class="philosophy-badge locke-badge mr-3">Locke</span>
+                            <span class="text-sm text-gray-600">Locke believed in limited government with the consent of the governed. Individual rights are natural and cannot be surrendered.</span>
+                        `;
+                        break;
+                    case 'rousseau':
+                        content = `
+                            <span class="philosophy-badge rousseau-badge mr-3">Rousseau</span>
+                            <span class="text-sm text-gray-600">Rousseau envisioned a society based on the general will, where individuals freely participate in collective decision-making.</span>
+                        `;
+                        break;
+                }
+                
+                philosophyContext.innerHTML = content;
+            } catch (error) {
+                console.error('Error updating philosophy context:', error);
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initSimulation);
+    </script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>
